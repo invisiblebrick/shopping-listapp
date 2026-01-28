@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쇼핑 리스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #itemInput {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #itemInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #addButton {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #addButton:hover {
+            background: #5568d3;
+        }
+
+        #addButton:active {
+            transform: scale(0.98);
+        }
+
+        .list-section {
+            margin-top: 20px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .list-header h2 {
+            color: #555;
+            font-size: 18px;
+        }
+
+        .item-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        #shoppingList {
+            list-style: none;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .list-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .list-item.checked {
+            opacity: 0.6;
+        }
+
+        .list-item.checked .item-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ee5a52;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        .clear-all-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .clear-all-btn:hover {
+            background: #ee5a52;
+        }
+
+        .clear-all-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 쇼핑 리스트</h1>
+
+        <div class="input-section">
+            <input
+                type="text"
+                id="itemInput"
+                placeholder="쇼핑할 아이템을 입력하세요..."
+                autocomplete="off"
+            >
+            <button id="addButton">추가</button>
+        </div>
+
+        <div class="list-section">
+            <div class="list-header">
+                <h2>아이템 목록</h2>
+                <span class="item-count" id="itemCount">0개</span>
+            </div>
+            <ul id="shoppingList"></ul>
+            <button id="clearAllButton" class="clear-all-btn" style="display: none;">전체 삭제</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소 선택
+        const itemInput = document.getElementById('itemInput');
+        const addButton = document.getElementById('addButton');
+        const shoppingList = document.getElementById('shoppingList');
+        const itemCount = document.getElementById('itemCount');
+        const clearAllButton = document.getElementById('clearAllButton');
+
+        // 로컬 스토리지에서 데이터 불러오기 (에러 핸들링 추가)
+        let items = [];
+        try {
+            const stored = localStorage.getItem('shoppingList');
+            items = stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Failed to load items from localStorage:', error);
+            items = [];
+        }
+
+        // 초기 렌더링
+        renderList();
+
+        // 이벤트 리스너
+        addButton.addEventListener('click', addItem);
+        itemInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+        clearAllButton.addEventListener('click', clearAllItems);
+
+        // 아이템 추가 함수
+        function addItem() {
+            const text = itemInput.value.trim();
+
+            if (text === '') {
+                alert('아이템을 입력해주세요!');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                text: text,
+                checked: false
+            };
+
+            items.push(newItem);
+            saveToLocalStorage();
+            renderList();
+
+            itemInput.value = '';
+            itemInput.focus();
+        }
+
+        // 아이템 삭제 함수
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            saveToLocalStorage();
+            renderList();
+        }
+
+        // 체크 토글 함수
+        function toggleCheck(id) {
+            items = items.map(item => {
+                if (item.id === id) {
+                    return { ...item, checked: !item.checked };
+                }
+                return item;
+            });
+            saveToLocalStorage();
+            renderList();
+        }
+
+        // 전체 삭제 함수
+        function clearAllItems() {
+            if (confirm('모든 아이템을 삭제하시겠습니까?')) {
+                items = [];
+                saveToLocalStorage();
+                renderList();
+            }
+        }
+
+        // 리스트 렌더링 함수 (보안 개선: innerHTML 제거)
+        function renderList() {
+            shoppingList.innerHTML = '';
+
+            if (items.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-message';
+                emptyMessage.textContent = '아이템이 없습니다.';
+                const br = document.createElement('br');
+                const additionalText = document.createTextNode('새로운 아이템을 추가해보세요!');
+                emptyMessage.appendChild(br);
+                emptyMessage.appendChild(additionalText);
+                shoppingList.appendChild(emptyMessage);
+                clearAllButton.style.display = 'none';
+            } else {
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = `list-item ${item.checked ? 'checked' : ''}`;
+
+                    // 체크박스 생성
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'checkbox';
+                    checkbox.checked = item.checked;
+                    checkbox.addEventListener('change', () => toggleCheck(item.id));
+
+                    // 아이템 텍스트 생성 (XSS 방지: textContent 사용)
+                    const span = document.createElement('span');
+                    span.className = 'item-text';
+                    span.textContent = item.text;
+
+                    // 삭제 버튼 생성
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => deleteItem(item.id));
+
+                    // 요소들을 li에 추가
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                    li.appendChild(deleteBtn);
+
+                    shoppingList.appendChild(li);
+                });
+                clearAllButton.style.display = 'block';
+            }
+
+            // 아이템 개수 업데이트
+            itemCount.textContent = `${items.length}개`;
+        }
+
+        // 로컬 스토리지에 저장 (에러 핸들링 추가)
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('shoppingList', JSON.stringify(items));
+            } catch (error) {
+                console.error('Failed to save items to localStorage:', error);
+                // 저장 공간이 부족한 경우 사용자에게 알림
+                if (error.name === 'QuotaExceededError') {
+                    alert('저장 공간이 부족합니다. 일부 아이템을 삭제해주세요.');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
