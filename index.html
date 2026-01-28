@@ -237,7 +237,7 @@
         // Supabase 클라이언트 초기화
         const SUPABASE_URL = 'https://kojjetxrquoiqfrbfrnz.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_GWd1Fa4YHXUG1HmRsjn8Nw_UPPIEJgS';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // DOM 요소 선택
         const itemInput = document.getElementById('itemInput');
@@ -258,7 +258,7 @@
         // 데이터베이스에서 아이템 불러오기
         async function loadItems() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('shopping_items')
                     .select('*')
                     .order('created_at', { ascending: true });
@@ -298,7 +298,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('shopping_items')
                     .insert([{ text: text, checked: false }])
                     .select();
@@ -323,7 +323,7 @@
         // 아이템 삭제 함수
         async function deleteItem(id) {
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('shopping_items')
                     .delete()
                     .eq('id', id);
@@ -344,7 +344,7 @@
             if (!item) return;
 
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('shopping_items')
                     .update({ checked: !item.checked })
                     .eq('id', id);
@@ -368,7 +368,7 @@
         async function clearAllItems() {
             if (confirm('모든 아이템을 삭제하시겠습니까?')) {
                 try {
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('shopping_items')
                         .delete()
                         .neq('id', '00000000-0000-0000-0000-000000000000'); // 모든 행 삭제
